@@ -1173,7 +1173,7 @@ function! s:commits(buffer_local, args)
 
   if !s:is_win && &columns > s:wide
     call extend(options.options,
-    \ ['--preview', 'echo {} | grep -o "[a-f0-9]\{7,\}" | head -1 | xargs git show --color=always | head -200'])
+    \ ['--preview', 'echo {} | grep -o "[a-f0-9]\{7,\}" | head -1 | xargs git show --color=always | diff-so-fancy | less --tabs=4 -RFX'])
   endif
 
   return s:fzf(a:buffer_local ? 'bcommits' : 'commits', options, a:args)
