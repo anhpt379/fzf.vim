@@ -1152,7 +1152,8 @@ function! s:commits(buffer_local, args)
     endif
     let source .= ' --follow '.fzf#shellescape(current)
   else
-    let source .= ' --graph'
+    let source .= ' | tr "\n" " " | sed -E "s/[a-f0-9]{7,}+/\\n&/2g"'
+
   endif
 
   let command = a:buffer_local ? 'BCommits' : 'Commits'
