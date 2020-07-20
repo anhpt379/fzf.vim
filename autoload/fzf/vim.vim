@@ -1113,6 +1113,7 @@ function! s:commits_sink(lines)
   end
 
   let diff = a:lines[0] == 'ctrl-d'
+  let rebase = a:lines[0] == 'ctrl-r'
   let cmd = s:action_for(a:lines[0], 'e')
   let buf = bufnr('')
   for idx in range(1, len(a:lines) - 1)
@@ -1123,6 +1124,8 @@ function! s:commits_sink(lines)
           execute 'tab sb' buf
         endif
         execute 'Gdiff' sha
+      elseif rebase
+        execute 'Grebase -i' sha
       else
         " Since fugitive buffers are unlisted, we can't keep using 'e'
         let c = (cmd == 'e' && idx > 1) ? 'tab split' : cmd
@@ -1163,8 +1166,8 @@ function! s:commits(buffer_local, args)
   \ 'sink*':   s:function('s:commits_sink'),
   \ 'options': s:reverse_list(['--ansi', '--multi', '--tiebreak=index',
   \   '--inline-info', '--prompt', command.'> ', '--bind=ctrl-s:toggle-sort',
-  \   '--header', ':: Press '.s:magenta('CTRL-S', 'Special').' to toggle sort, '.s:magenta('CTRL-Y', 'Special').' to yank commit hashes',
-  \   '--expect=ctrl-y,'.expect_keys])
+  \   '--header', ':: Press '.s:magenta('CTRL-S', 'Special').' to toggle sort, '.s:magenta('CTRL-R', 'Special').' to rebase -i, '.s:magenta('CTRL-Y', 'Special').' to yank commit hashes',
+  \   '--expect=ctrl-y,ctrl-r,'.expect_keys])
   \ }
 
   if a:buffer_local
