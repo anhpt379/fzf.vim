@@ -1154,10 +1154,9 @@ function! s:commits(buffer_local, args)
       return s:warn('The current buffer is not in the working tree')
     endif
     let source .= ' --follow '.fzf#shellescape(current)
-  else
-    let source .= ' | tr "\n" " " | sed -E "s/\\x1b\\[32m[a-f0-9]{7,}+/\\n&/2g"'
-
   endif
+
+  let source .= ' | tr "\n" " " | sed -E "s/\\x1b\\[32m[a-f0-9]{7,}+/\\n&/2g"'
 
   let command = a:buffer_local ? 'BCommits' : 'Commits'
   let expect_keys = join(keys(get(g:, 'fzf_action', s:default_action)), ',')
