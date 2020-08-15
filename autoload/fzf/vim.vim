@@ -1115,6 +1115,7 @@ function! s:commits_sink(lines)
 
   let diff = a:lines[0] == 'ctrl-d'
   let rebase = a:lines[0] == 'ctrl-r'
+  let open_in_browser = a:lines[0] == 'ctrl-o'
   let cmd = s:action_for(a:lines[0], 'e')
   let buf = bufnr('')
   for idx in range(1, len(a:lines) - 1)
@@ -1127,6 +1128,13 @@ function! s:commits_sink(lines)
         execute 'Gdiff' sha
       elseif rebase
         execute 'Grebase -i' sha
+      elseif open_in_browser
+        let remote_url = trim(system('git config remote.origin.url'))
+        let remote_url = substitute(remote_url, ':', '/', '')
+        let remote_url = substitute(remote_url, '^git@', 'http://', '')
+        let remote_url = substitute(remote_url, '///', '://', '')
+        let remote_url = substitute(remote_url, '.*\zs\.git$', '/commit/'.sha, '')
+        execute ':silent !open' remote_url
       else
         " Since fugitive buffers are unlisted, we can't keep using 'e'
         let c = (cmd == 'e' && idx > 1) ? 'tab split' : cmd
@@ -1166,8 +1174,12 @@ function! s:commits(buffer_local, args)
   \ 'sink*':   s:function('s:commits_sink'),
   \ 'options': s:reverse_list(['--ansi', '--multi', '--tiebreak=index',
   \   '--inline-info', '--prompt', command.'> ', '--bind=ctrl-s:toggle-sort',
-  \   '--header', ':: Press '.s:magenta('CTRL-S', 'Special').' to toggle sort, '.s:magenta('CTRL-R', 'Special').' to rebase -i, '.s:magenta('CTRL-Y', 'Special').' to yank commit hashes',
-  \   '--expect=ctrl-y,ctrl-r,'.expect_keys])
+  \   '--header', ':: Press '
+  \     .s:magenta('CTRL-S', 'Special').' to toggle sort, '
+  \     .s:magenta('CTRL-R', 'Special').' to rebase -i, '
+  \     .s:magenta('CTRL-O', 'Special').' to open commit in browser, '
+  \     .s:magenta('CTRL-Y', 'Special').' to yank commit hashes',
+  \   '--expect=ctrl-y,ctrl-r,ctrl-o,'.expect_keys])
   \ }
 
   if a:buffer_local
