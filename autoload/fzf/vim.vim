@@ -540,7 +540,7 @@ function! s:history_source(type)
   let max  = histnr(a:type)
   let fmt  = s:yellow(' %'.len(string(max)).'d ', 'Number')
   let list = filter(map(range(1, max), 'histget(a:type, - v:val)'), '!empty(v:val)')
-  return extend([' :: Press '.s:magenta('CTRL-E', 'Special').' to edit'],
+  return extend([s:magenta('CTRL-E', 'Special').' to edit'],
     \ map(list, 'printf(fmt, len(list) - v:key)." ".v:val'))
 endfunction
 
@@ -1214,9 +1214,10 @@ function! s:commits(buffer_local, args)
   let options = {
   \ 'source':  source,
   \ 'sink*':   s:function('s:commits_sink'),
-  \ 'options': s:reverse_list(['--ansi', '--multi', '--tiebreak=index',
-  \   '--inline-info', '--prompt', command.'> ', '--bind=ctrl-s:toggle-sort',
-  \   '--header', ':: Press '
+  \ 'options': s:reverse_list(['--ansi', '--no-multi', '--tiebreak=index',
+  \   '--info=hidden', '--prompt', command.'> ', '--pointer= ',
+  \   '--bind=ctrl-s:toggle-sort',
+  \   '--header', ''
   \     .s:magenta('CTRL-S', 'Special').' to toggle sort, '
   \     .s:magenta('CTRL-R', 'Special').' to rebase -i, '
   \     .s:magenta('CTRL-O', 'Special').' to open commit in browser, '
