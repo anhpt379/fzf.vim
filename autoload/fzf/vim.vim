@@ -1215,7 +1215,7 @@ function! s:commits(buffer_local, args)
   \ 'source':  source,
   \ 'sink*':   s:function('s:commits_sink'),
   \ 'options': s:reverse_list(['--ansi', '--no-multi', '--tiebreak=index',
-  \   '--info=hidden', '--prompt', command.'> ', '--pointer= ',
+  \   '--prompt', command.'> ', '--pointer= ',
   \   '--bind=ctrl-s:toggle-sort',
   \   '--header', ''
   \     .s:magenta('CTRL-S', 'Special').' to toggle sort, '
