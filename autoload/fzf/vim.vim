@@ -1241,7 +1241,7 @@ function! s:commits(buffer_local, args)
   if !s:is_win && &columns > s:wide
     let suffix = executable('diff-so-fancy') ? '--color=always | diff-so-fancy | less --tabs=4 -RFX' : '--color=always'
     call extend(options.options,
-    \ ['--preview', 'echo {} | grep -o "[a-f0-9]\{7,\}" | head -1 | xargs git show --format=format: ' . suffix])
+    \ ['--preview', 'echo {} | grep -o "[a-f0-9]\{7,\}" | head -1 | xargs git show ' . suffix])
   endif
 
   return s:fzf(a:buffer_local ? 'bcommits' : 'commits', options, a:args)
