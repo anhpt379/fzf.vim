@@ -1194,7 +1194,7 @@ function! s:commits_sink(lines)
         endif
         execute 'Gdiff' sha
       elseif rebase
-        execute 'Grebase -i' sha
+        execute 'Git rebase -i' sha
       elseif open_in_browser
         let remote_url = trim(system('git config remote.origin.url'))
         let remote_url = substitute(remote_url, ':', '/', '')
