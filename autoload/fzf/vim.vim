@@ -1160,7 +1160,7 @@ function! fzf#vim#windows(...)
 endfunction
 
 " ------------------------------------------------------------------
-" Commits / BCommits
+" Commits / BCommits / LCommits
 " ------------------------------------------------------------------
 function! s:yank_to_register(data)
   let @" = a:data
@@ -1234,7 +1234,11 @@ function! s:commits(buffer_local, args)
 
   let source .= ' | tr "\n" " " | sed -E "s/\\x1b\\[32m[a-f0-9]{7,}+/\\n&/2g"'
 
-  let command = a:buffer_local ? 'BCommits' : 'Commits'
+  if exists("g:fzf_commits_log_options")
+    let command = 'LCommits'
+  else
+    let command = a:buffer_local ? 'BCommits' : 'Commits'
+  endif
   let expect_keys = join(keys(get(g:, 'fzf_action', s:default_action)), ',')
   let options = {
   \ 'source':  source,
@@ -1265,11 +1269,25 @@ function! s:commits(buffer_local, args)
 endfunction
 
 function! fzf#vim#commits(...)
+  if exists("g:fzf_commits_log_options")
+    unlet g:fzf_commits_log_options
+  endif
   return s:commits(0, a:000)
 endfunction
 
 function! fzf#vim#buffer_commits(...)
+  if exists("g:fzf_commits_log_options")
+    unlet g:fzf_commits_log_options
+  endif
   return s:commits(1, a:000)
+endfunction
+
+function! fzf#vim#line_commits(...)
+  let l:startline = line("'<")
+  let l:endline = line("'>")
+  let l:file = expand('%:.')
+  let g:fzf_commits_log_options = '-L '.l:startline.','.l:endline.':'.l:file.' --no-patch --color=always --format="%C(auto)%h%d %s %C(green)%cr"'
+  return s:commits(0, a:000)
 endfunction
 
 " ------------------------------------------------------------------
@@ -1452,3 +1470,4 @@ endfunction
 " ------------------------------------------------------------------
 let &cpo = s:cpo_save
 unlet s:cpo_save
+
