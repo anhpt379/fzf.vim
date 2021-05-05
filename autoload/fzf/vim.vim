@@ -1215,7 +1215,7 @@ function! s:commits(buffer_local, args)
     return s:warn('Not in git repository')
   endif
 
-  let source = 'git log '.get(g:, 'fzf_commits_log_options', '--color=always '.fzf#shellescape('--format=%C(auto)%h%d %s %C(green)%cr'))
+  let source = 'git log '.get(g:, 'fzf_commits_log_options', '--color=always '.fzf#shellescape('--format="%C(green)%h%C(red)%d%Creset %C(reset)%s %C(#555555)%b(%aN - %cr)"'))
   let current = expand('%')
   let managed = 0
   if !empty(current)
@@ -1284,7 +1284,7 @@ function! fzf#vim#line_commits(...)
   let l:startline = line("'<")
   let l:endline = line("'>")
   let l:file = expand('%:.')
-  let g:fzf_commits_log_options = '-L '.l:startline.','.l:endline.':'.l:file.' --no-patch --color=always --format="%C(auto)%h%d %s %C(green)%cr"'
+  let g:fzf_commits_log_options = '-L '.l:startline.','.l:endline.':'.l:file.' --no-patch --color=always --format="%C(green)%h%C(red)%d%Creset %C(reset)%s %C(#555555)%b(%aN - %cr)"'
   return s:commits(0, a:000)
 endfunction
 
