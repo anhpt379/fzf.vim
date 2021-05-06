@@ -1215,7 +1215,7 @@ function! s:commits(buffer_local, args)
     return s:warn('Not in git repository')
   endif
 
-  let source = 'git log '.get(g:, 'fzf_commits_log_options', '--color=always '.fzf#shellescape('--format="%C(green)%h%C(red)%d%Creset %C(reset)%s %C(#555555)%b(%aN - %cr)"'))
+  let source = 'git log '.get(g:, 'fzf_commits_log_options', '--color=always '.fzf#shellescape('--format=%C(green)%h%C(red)%d%Creset %C(reset)%s %C(#555555)%b(%aN - %cr)'))
   let current = expand('%')
   let managed = 0
   if !empty(current)
@@ -1223,20 +1223,23 @@ function! s:commits(buffer_local, args)
     let managed = !v:shell_error
   endif
 
-  if a:buffer_local
+  if a:buffer_local == 1
     if !managed
       return s:warn('The current buffer is not in the working tree')
     endif
     let source .= ' --follow '.fzf#shellescape(current)
+    let command = 'BCommits'
+  elseif a:buffer_local == 2
+    let startline = line("'<")
+    let endline = line("'>")
+    let source .= ' -L '.startline.','.endline.':'.current.' --no-patch'
+    let command = 'LCommits'
+  else
+    let command = 'Commits'
   endif
 
   let source .= ' | tr "\n" " " | sed -E "s/\\x1b\\[32m[a-f0-9]{7,}+/\\n&/2g"'
 
-  if exists("g:fzf_commits_log_options")
-    let command = 'LCommits'
-  else
-    let command = a:buffer_local ? 'BCommits' : 'Commits'
-  endif
   let expect_keys = join(keys(get(g:, 'fzf_action', s:default_action)), ',')
   let options = {
   \ 'source':  source,
@@ -1252,7 +1255,7 @@ function! s:commits(buffer_local, args)
   \   '--expect=ctrl-y,ctrl-r,ctrl-o,'.expect_keys])
   \ }
 
-  if a:buffer_local
+  if a:buffer_local == 1
     let options.options[-2] .= ', '.s:magenta('CTRL-D', 'Special').' to diff'
     let options.options[-1] .= ',ctrl-d'
   endif
@@ -1263,29 +1266,19 @@ function! s:commits(buffer_local, args)
     \ ['--preview', 'echo {} | grep -o "[a-f0-9]\{7,\}" | head -1 | xargs git show ' . suffix])
   endif
 
-  return s:fzf(a:buffer_local ? 'bcommits' : 'commits', options, a:args)
+  return s:fzf(tolower(command), options, a:args)
 endfunction
 
 function! fzf#vim#commits(...)
-  if exists("g:fzf_commits_log_options")
-    unlet g:fzf_commits_log_options
-  endif
   return s:commits(0, a:000)
 endfunction
 
 function! fzf#vim#buffer_commits(...)
-  if exists("g:fzf_commits_log_options")
-    unlet g:fzf_commits_log_options
-  endif
   return s:commits(1, a:000)
 endfunction
 
 function! fzf#vim#line_commits(...)
-  let l:startline = line("'<")
-  let l:endline = line("'>")
-  let l:file = expand('%:.')
-  let g:fzf_commits_log_options = '-L '.l:startline.','.l:endline.':'.l:file.' --no-patch --color=always --format="%C(green)%h%C(red)%d%Creset %C(reset)%s %C(#555555)%b(%aN - %cr)"'
-  return s:commits(0, a:000)
+  return s:commits(2, a:000)
 endfunction
 
 " ------------------------------------------------------------------
