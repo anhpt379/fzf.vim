@@ -643,7 +643,7 @@ function! fzf#vim#gitfiles(args, ...)
   let preview = printf(
     \ 'bash -c "if [[ {1} =~ M ]]; then %s; else %s {-1}; fi"',
     \ executable('delta')
-      \ ? 'git diff -- {-1} | delta --file-style=omit | sed 1d'
+      \ ? 'git diff -- {-1} | delta --width $FZF_PREVIEW_COLUMNS --file-style=omit | sed 1d'
       \ : 'git diff --color=always -- {-1} | sed 1,4d',
     \ s:bin.preview)
   let wrapped = fzf#wrap({
@@ -1210,7 +1210,7 @@ function! s:commits_sink(lines)
   endfor
 endfunction
 
-function! s:commits(buffer_local, args)
+function! s:commits(range, buffer_local, args)
   let s:git_root = s:get_git_root()
   if empty(s:git_root)
     return s:warn('Not in git repository')
@@ -1224,17 +1224,14 @@ function! s:commits(buffer_local, args)
     let managed = !v:shell_error
   endif
 
-  if a:buffer_local == 1
+  if len(a:range) || a:buffer_local
     if !managed
       return s:warn('The current buffer is not in the working tree')
     endif
-    let source .= ' --follow '.fzf#shellescape(current)
+    let source .= len(a:range)
+      \ ? printf(' -L %d,%d:%s --no-patch', a:range[0], a:range[1], fzf#shellescape(current))
+      \ : (' --follow '.fzf#shellescape(current))
     let command = 'BCommits'
-  elseif a:buffer_local == 2
-    let startline = line("'<")
-    let endline = line("'>")
-    let source .= ' -L '.startline.','.endline.':'.current.' --no-patch'
-    let command = 'LCommits'
   else
     let command = 'Commits'
   endif
@@ -1270,16 +1267,34 @@ function! s:commits(buffer_local, args)
   return s:fzf(tolower(command), options, a:args)
 endfunction
 
-function! fzf#vim#commits(...)
-  return s:commits(0, a:000)
+" Heuristically determine if the user specified a range
+function! s:given_range(line1, line2)
+  " 1. From visual mode
+  "   :'<,'>Commits
+  " 2. From command-line
+  "   :10,20Commits
+  if a:line1 == line("'<") && a:line2 == line("'>") ||
+        \ (a:line1 != 1 || a:line2 != line('$'))
+    return [a:line1, a:line2]
+  endif
+
+  return []
 endfunction
 
-function! fzf#vim#buffer_commits(...)
-  return s:commits(1, a:000)
+function! fzf#vim#commits(...) range
+  if exists('b:fzf_winview')
+    call winrestview(b:fzf_winview)
+    unlet b:fzf_winview
+  endif
+  return s:commits(s:given_range(a:firstline, a:lastline), 0, a:000)
 endfunction
 
-function! fzf#vim#line_commits(...)
-  return s:commits(2, a:000)
+function! fzf#vim#buffer_commits(...) range
+  if exists('b:fzf_winview')
+    call winrestview(b:fzf_winview)
+    unlet b:fzf_winview
+  endif
+  return s:commits(s:given_range(a:firstline, a:lastline), 1, a:000)
 endfunction
 
 " ------------------------------------------------------------------
