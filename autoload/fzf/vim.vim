@@ -1223,7 +1223,7 @@ function! s:commits(range, buffer_local, args)
   let options = {
   \ 'source':  source,
   \ 'sink*':   s:function('s:commits_sink'),
-  \ 'options': s:reverse_list(['--ansi', '--no-multi', '--tiebreak=index',
+  \ 'options': s:reverse_list(['--ansi', '--no-multi', '--tiebreak=index', '--exact',
   \   '--prompt', command.'> ', '--pointer= ',
   \   '--bind=ctrl-s:toggle-sort',
   \   '--header', ''
