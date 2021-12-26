@@ -1185,7 +1185,10 @@ function! s:commits_sink(lines)
         let remote_url = substitute(remote_url, '.*\zs\.git$', '/commit/'.sha, '')
         execute ':silent !open' remote_url
       else
-        execute ':terminal git show --color=always' sha '| diff-so-fancy'
+        " Since fugitive buffers are unlisted, we can't keep using 'e'
+        let c = (cmd == 'e' && idx > 1) ? 'tab split' : cmd
+        execute c FugitiveFind(sha)
+        " execute ':terminal git show --color=always' sha '| diff-so-fancy'
       endif
     endif
   endfor
