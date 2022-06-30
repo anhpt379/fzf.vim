@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 
-REVERSE="\x1b[7m"
 RESET="\x1b[m"
+BG='\033[47m'   # White Background
+FG='\033[0;30m' # Black Foreground
 
 if [ -z "$1" ]; then
   echo "usage: $0 [--tag] FILENAME[:LINENO][:IGNORED]"
@@ -76,8 +77,9 @@ DEFAULT_COMMAND="highlight -O ansi -l {} || coderay {} || rougify {} || cat {}"
 CMD=${FZF_PREVIEW_COMMAND:-$DEFAULT_COMMAND}
 CMD=${CMD//{\}/$(printf %q "$FILE")}
 
-eval "$CMD" 2> /dev/null | awk "{ \
+eval "$CMD" 2> /dev/null | \
+  awk "{ \
     if (NR == $CENTER) \
-        { gsub(/\x1b[[0-9;]*m/, \"&$REVERSE\"); printf(\"$REVERSE%s\n$RESET\", \$0); } \
+        { gsub(/\x1b[[0-9;]*m/, \"\"); printf(\"$FG$BG%s\n$RESET\", \$0); } \
     else printf(\"$RESET%s\n\", \$0); \
     }"
