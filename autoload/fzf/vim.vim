@@ -1255,7 +1255,7 @@ function! s:commits(range, buffer_local, args)
     let orderfile = tempname()
     call writefile([current[len(s:git_root)+1:]], orderfile)
     call extend(options.options,
-    \ ['--preview', 'echo {} | grep -o "[a-f0-9]\{7,\}" | head -1 | xargs ' . prefix . 'show -O'.fzf#shellescape(orderfile).' --format=format: --color=always ' . suffix])
+    \ ['--preview', 'echo {} | grep -o "[a-f0-9]\{7,\}" | head -1 | xargs ' . prefix . 'show -O'.fzf#shellescape(orderfile).' --color=always ' . suffix])
   endif
 
   return s:fzf(tolower(command), options, a:args)
