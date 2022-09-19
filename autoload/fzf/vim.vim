@@ -1157,6 +1157,19 @@ function! s:yank_to_register(data)
   silent! let @+ = a:data
 endfunction
 
+function! s:get_visual_selection()
+    " Why is this not a built-in Vim script function?!
+    let [line_start, column_start] = getpos("'<")[1:2]
+    let [line_end, column_end] = getpos("'>")[1:2]
+    let lines = getline(line_start, line_end)
+    if len(lines) == 0
+        return ''
+    endif
+    let lines[-1] = lines[-1][: column_end - (&selection == 'inclusive' ? 1 : 2)]
+    let lines[0] = lines[0][column_start - 1:]
+    return join(lines, "\n")
+endfunction
+
 function! s:commits_sink(lines)
   if len(a:lines) < 2
     return
@@ -1220,9 +1233,28 @@ function! s:commits(range, buffer_local, args)
     if !managed
       return s:warn('The current buffer is not in the working tree')
     endif
-    let source .= len(a:range)
-      \ ? printf(' -L %d,%d:%s --no-patch', a:range[0], a:range[1], fzf#shellescape(current))
-      \ : (' --follow '.fzf#shellescape(current))
+    if len(a:range)
+      let reg_save = getreg('"')
+      let regtype_save = getregtype('"')
+      let cb_save = &clipboard
+      set clipboard&
+      normal! ""gvy
+      let selection = getreg('"')
+
+      if stridx(selection, "\n") < 0
+        " Search for visually selected text
+        let source .= printf(' --no-patch -G %s -- %s', fzf#shellescape(selection), fzf#shellescape(current))
+      else
+        " Search for line
+        let source .= printf(' --no-patch -L %d,%d:%s', a:range[0], a:range[1], fzf#shellescape(current))
+      endif
+
+      call setreg('"', reg_save, regtype_save)
+      let &clipboard = cb_save
+
+    else
+      let source .= (' --follow '.fzf#shellescape(current))
+    endif
     let command = 'BCommits'
   else
     let command = 'Commits'
@@ -1471,4 +1503,3 @@ endfunction
 " ------------------------------------------------------------------
 let &cpo = s:cpo_save
 unlet s:cpo_save
-
