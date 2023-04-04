@@ -1309,17 +1309,17 @@ function! s:commits(range, buffer_local, args)
 
       if stridx(selection, "\n") < 0
         " Search for visually selected text
-        let source .= printf(' --no-patch -G %s -- %s', fzf#shellescape(selection), fzf#shellescape(current))
+        let source .= join([printf(' --no-patch -G %s -- %s', fzf#shellescape(selection), fzf#shellescape(current)), log_opts])
       else
         " Search for line
-        let source .= printf(' --no-patch -L %d,%d:%s', a:range[0], a:range[1], fzf#shellescape(current))
+        let source .= join([printf(' --no-patch -L %d,%d:%s', a:range[0], a:range[1], fzf#shellescape(current)), log_opts])
       endif
 
       call setreg('"', reg_save, regtype_save)
       let &clipboard = cb_save
 
     else
-      let source .= (' --follow '.fzf#shellescape(current))
+      let source .= join([' --follow '.fzf#shellescape(current), log_opts])
     endif
     let command = 'BCommits'
   else
@@ -1356,7 +1356,7 @@ function! s:commits(range, buffer_local, args)
     \ ['--preview', 'echo {} | grep -o "[a-f0-9]\{7,\}" | head -1 | xargs ' . prefix . 'show -O'.fzf#shellescape(orderfile).' --color=always ' . suffix])
   endif
 
-  return s:fzf(tolower(command), options, a:args)
+  return s:fzf(tolower(command), options, args)
 endfunction
 
 " Heuristically determine if the user specified a range
