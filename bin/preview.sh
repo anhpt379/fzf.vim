@@ -4,16 +4,19 @@ RESET="\x1b[m"
 BG='\033[47m'   # White Background
 FG='\033[0;30m' # Black Foreground
 
-if [ -z "$1" ]; then
+if [[ $# -lt 1 ]]; then
   echo "usage: $0 [--tag] FILENAME[:LINENO][:IGNORED]"
   exit 1
 fi
 
-if [ "$1" = --tag ]; then
+if [[ $1 = --tag ]]; then
   shift
   "$(dirname "${BASH_SOURCE[0]}")/tagpreview.sh" "$@"
   exit $?
 fi
+
+# Ignore if an empty path is given
+[[ -z $1 ]] && exit
 
 IFS=':' read -r -a INPUT <<< "$1"
 FILE=${INPUT[0]}
