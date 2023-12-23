@@ -1439,7 +1439,6 @@ function! s:commits_sink(lines)
   end
 
   let diff = a:lines[0] == 'ctrl-d'
-  let rebase = a:lines[0] == 'ctrl-r'
   let open_in_browser = a:lines[0] == 'ctrl-o'
   let Cmd = get(get(g:, 'fzf_action', s:default_action), a:lines[0], '')
   let cmd = type(Cmd) == s:TYPE.string ? Cmd : ''
@@ -1453,8 +1452,6 @@ function! s:commits_sink(lines)
           execute 'tab sb' buf
         endif
         execute 'Gdiff' sha
-      elseif rebase
-        execute 'Git rebase -i --rebase-merges' sha
       elseif open_in_browser
         let remote_url = trim(system('git config remote.origin.url'))
         let remote_url = substitute(remote_url, ':', '/', '')
@@ -1532,7 +1529,6 @@ function! s:commits(range, buffer_local, args)
   \   '--bind=ctrl-s:toggle-sort',
   \   '--header', ''
   \     .s:magenta('CTRL-S', 'Special').' to toggle sort, '
-  \     .s:magenta('CTRL-R', 'Special').' to rebase -i, '
   \     .s:magenta('CTRL-O', 'Special').' to open commit in browser, '
   \     .s:magenta('CTRL-Y', 'Special').' to yank commit hashes',
   \   '--expect=ctrl-y,ctrl-r,ctrl-o,'.expect_keys])
