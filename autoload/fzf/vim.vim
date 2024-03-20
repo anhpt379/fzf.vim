@@ -1110,8 +1110,9 @@ function! fzf#vim#tags(query, ...)
   endfor
   let opts = v2_limit < 0 ? ['--algo=v1'] : []
 
+  let args = insert(map(tagfiles, 'fzf#shellescape(fnamemodify(v:val, ":p"))'), fzf#shellescape(a:query), 0)
   return s:fzf('tags', {
-  \ 'source':  'perl '.fzf#shellescape(s:bin.tags).' '.join(map(tagfiles, 'fzf#shellescape(fnamemodify(v:val, ":p"))')),
+  \ 'source':  join(['perl', fzf#shellescape(s:bin.tags), join(args)]),
   \ 'sink*':   s:function('s:tags_sink'),
   \ 'options': extend(opts, ['--nth', '1..2', '-m', '-d', '\t', '--tiebreak=begin', '--prompt', 'Tags> ', '--query', a:query])}, a:000)
 endfunction
@@ -1351,7 +1352,7 @@ function! fzf#vim#helptags(...)
   endif
   let s:helptags_script = tempname()
 
-  call writefile(['use Fatal qw(open close); for my $filename (@ARGV) { open(my $file,q(<),$filename); while (<$file>) { /(.*?)\t(.*?)\t(.*)/; push @lines, sprintf(qq('.s:green('%-40s', 'Label').'\t%s\t%s\t%s\n), $1, $2, $filename, $3); } close($file); } print for sort @lines;'], s:helptags_script)
+  call writefile(['for my $filename (@ARGV) { open(my $file,q(<),$filename) or die; while (<$file>) { /(.*?)\t(.*?)\t(.*)/; push @lines, sprintf(qq('.s:green('%-40s', 'Label').'\t%s\t%s\t%s\n), $1, $2, $filename, $3); } close($file) or die; } print for sort @lines;'], s:helptags_script)
   return s:fzf('helptags', {
   \ 'source': 'perl '.fzf#shellescape(s:helptags_script).' '.join(map(tags, 'fzf#shellescape(v:val)')),
   \ 'sink':    s:function('s:helptag_sink'),
