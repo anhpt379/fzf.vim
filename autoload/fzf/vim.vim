@@ -1567,6 +1567,7 @@ endfunction
 
 " [git-log-args], [spec (dict)], [fullscreen (bool)]
 function! fzf#vim#commits(...) range
+  set nowinfixbuf
   if exists('b:fzf_winview')
     call winrestview(b:fzf_winview)
     unlet b:fzf_winview
