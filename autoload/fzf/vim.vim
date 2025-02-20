@@ -1632,23 +1632,14 @@ function! s:commits(range, buffer_local, args)
     let options.options[-1] .= ',ctrl-d'
   endif
 
-<<<<<<< HEAD
-  if !s:is_win && &columns > s:wide
-    let suffix = executable('diff-so-fancy') ? '--color=always | diff-so-fancy | less --tabs=4 -RFX' : ''
-    let orderfile = tempname()
-    call writefile([current[len(s:git_root)+1:]], orderfile)
-    call extend(options.options,
-    \ ['--preview', 'echo {} | grep -o "[a-f0-9]\{7,\}" | head -1 | xargs ' . prefix . 'show -O'.fzf#shellescape(orderfile).' --color=always ' . suffix])
-=======
   if with_preview
     if !len(a:range)
       let orderfile = tempname()
       call writefile([current[len(s:git_root)+1:]], orderfile)
       let previewcmd = 'echo {} | grep -o "[a-f0-9]\{7,\}" | head -1 | xargs ' . prefix . 'show -O'.fzf#shellescape(orderfile).' --format=format: --color=always '
     endif
-    let suffix = executable('delta') ? '| delta --width $FZF_PREVIEW_COLUMNS' : ''
+    let suffix = executable('diff-so-fancy') ? '--color=always | diff-so-fancy | less --tabs=4 -RFX' : ''
     call extend(options.options, ['--preview', previewcmd . suffix])
->>>>>>> 0a80e43f9027ec64213d602dbb0b22d65a072ca8
   endif
 
   return s:fzf(tolower(command), options, args)
