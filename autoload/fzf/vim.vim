@@ -340,6 +340,10 @@ function! s:fzf(name, opts, extra)
   let eopts  = has_key(extra, 'options') ? remove(extra, 'options') : ''
   let merged = extend(copy(a:opts), extra)
   call s:merge_opts(merged, eopts)
+
+  " Command-level fzf options
+  call s:merge_opts(merged, s:conf(a:name.'_options', []))
+
   return fzf#run(s:wrap(a:name, merged, bang))
 endfunction
 
@@ -365,7 +369,7 @@ function! s:action_for(key, ...)
   " errors. e.g. E471: Argument required: tab drop
   if !a:0
     if !edit
-      normal! m'
+      call setpos("''", getpos('.'))
       silent! call s:execute_silent(cmd)
     endif
   else
@@ -374,7 +378,7 @@ function! s:action_for(key, ...)
     " instructed to stay on the current buffer.
     let stay = edit && (a:0 > 1 && a:2 || fnamemodify(a:1, ':p') ==# expand('%:p'))
     if !stay
-      normal! m'
+      call setpos("''", getpos('.'))
       call s:execute_silent((len(cmd) ? cmd : 'edit').' '.s:escape(a:1))
     endif
   endif
@@ -711,6 +715,9 @@ endfunction
 " ------------------------------------------------------------------
 
 function! s:get_git_root(dir)
+  if empty(a:dir) && exists('*FugitiveWorkTree')
+    return FugitiveWorkTree()
+  endif
   let dir = len(a:dir) ? a:dir : substitute(split(expand('%:p:h'), '[/\\]\.git\([/\\]\|$\)')[0], '^fugitive://', '', '')
   let root = systemlist('git -C ' . shellescape(dir) . ' rev-parse --show-toplevel')[0]
   return v:shell_error ? '' : (len(a:dir) ? fnamemodify(a:dir, ':p') : root)
